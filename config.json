@@ -1,0 +1,850 @@
+{
+  "templateRules": [
+    {
+      "codeContains": "DZMK",
+      "kw1": "黑带",
+      "kw2": "周年",
+      "kw3": "双月",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-黑带周年双月"
+    },
+    {
+      "codeContains": "DZFG",
+      "kw1": "情侣",
+      "kw2": "星座",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "发光-情侣星座双月"
+    },
+    {
+      "codeContains": "DZMK",
+      "kw1": "情侣",
+      "kw2": "星座",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-情侣星座双月"
+    },
+    {
+      "codeContains": "DZFG",
+      "kw1": "群山",
+      "kw2": "单月",
+      "kw3": "",
+      "aNameReq": "empty",
+      "msgReq": "empty",
+      "result": "发光-群山单月-单日期"
+    },
+    {
+      "codeContains": "DZFG",
+      "kw1": "群山",
+      "kw2": "单月",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "required",
+      "result": "发光-群山单月-寄语"
+    },
+    {
+      "codeContains": "DZFG",
+      "kw1": "小王子",
+      "kw2": "单月",
+      "kw3": "",
+      "aNameReq": "empty",
+      "msgReq": "empty",
+      "result": "发光-小王子单月-单日期"
+    },
+    {
+      "codeContains": "DZFG",
+      "kw1": "小王子",
+      "kw2": "单月",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "required",
+      "result": "发光-小王子单月-寄语"
+    },
+    {
+      "codeContains": "DZMK",
+      "kw1": "群山",
+      "kw2": "单月",
+      "kw3": "",
+      "aNameReq": "empty",
+      "msgReq": "empty",
+      "result": "透明-群山单月-单日期"
+    },
+    {
+      "codeContains": "DZMK",
+      "kw1": "群山",
+      "kw2": "单月",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "required",
+      "result": "透明-群山单月-寄语"
+    },
+    {
+      "codeContains": "DZMK",
+      "kw1": "小王子",
+      "kw2": "单月",
+      "kw3": "",
+      "aNameReq": "empty",
+      "msgReq": "empty",
+      "result": "透明-小王子单月-单日期"
+    },
+    {
+      "codeContains": "DZMK",
+      "kw1": "小王子",
+      "kw2": "单月",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "required",
+      "result": "透明-小王子单月-寄语"
+    },
+    {
+      "codeContains": "DZFG",
+      "kw1": "情侣",
+      "kw2": "双月",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "发光-情侣星座双月"
+    },
+    {
+      "codeContains": "DZMK",
+      "kw1": "情侣",
+      "kw2": "双月",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-情侣星座双月"
+    },
+    {
+      "codeContains": "DZFG",
+      "kw1": "播放",
+      "kw2": "双月",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "发光-播放器双月"
+    },
+    {
+      "codeContains": "DZFG",
+      "kw1": "播放",
+      "kw2": "单月",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "发光-播放器单月"
+    },
+    {
+      "codeContains": "DZFG",
+      "kw1": "兔子",
+      "kw2": "双月",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "发光-兔子双月"
+    },
+    {
+      "codeContains": "DZFG",
+      "kw1": "兔子",
+      "kw2": "单月",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "发光-兔子单月"
+    },
+    {
+      "codeContains": "DZFG",
+      "kw1": "宇航员",
+      "kw2": "三月",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "发光-宇航员三月"
+    },
+    {
+      "codeContains": "DZFG",
+      "kw1": "群山",
+      "kw2": "双月",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "发光-群山双月"
+    },
+    {
+      "codeContains": "DZFG",
+      "kw1": "小王子",
+      "kw2": "双月",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "发光-小王子双月"
+    },
+    {
+      "codeContains": "DZMK",
+      "kw1": "渐变",
+      "kw2": "单月",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-渐变单月"
+    },
+    {
+      "codeContains": "DZMK",
+      "kw1": "播放",
+      "kw2": "双月",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-播放器双月"
+    },
+    {
+      "codeContains": "DZMK",
+      "kw1": "播放",
+      "kw2": "单月",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-播放器单月"
+    },
+    {
+      "codeContains": "DZMK",
+      "kw1": "黑带",
+      "kw2": "双月",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-黑带双月"
+    },
+    {
+      "codeContains": "DZMK",
+      "kw1": "黑带",
+      "kw2": "单月",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-黑带单月"
+    },
+    {
+      "codeContains": "DZMK",
+      "kw1": "纪念",
+      "kw2": "双月",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-纪念双月"
+    },
+    {
+      "codeContains": "DZMK",
+      "kw1": "纪念",
+      "kw2": "单月",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-纪念单月"
+    },
+    {
+      "codeContains": "DZMK",
+      "kw1": "周年",
+      "kw2": "双月",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-周年双月"
+    },
+    {
+      "codeContains": "DZMK",
+      "kw1": "群山",
+      "kw2": "双月",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-群山双月"
+    },
+    {
+      "codeContains": "DZMK",
+      "kw1": "群山",
+      "kw2": "三月",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-群山三月"
+    },
+    {
+      "codeContains": "DZMK",
+      "kw1": "兔子",
+      "kw2": "单月",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-兔子单月"
+    },
+    {
+      "codeContains": "DZMK",
+      "kw1": "兔子",
+      "kw2": "双月",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-兔子双月"
+    },
+    {
+      "codeContains": "DZMK",
+      "kw1": "小王子",
+      "kw2": "双月",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-小王子双月"
+    },
+    {
+      "codeContains": "DZFG",
+      "kw1": "单月",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "发光-单月"
+    },
+    {
+      "codeContains": "DZFG",
+      "kw1": "双月",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "发光-双月"
+    },
+    {
+      "codeContains": "DZMK",
+      "kw1": "单月",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-单月"
+    },
+    {
+      "codeContains": "DZMK",
+      "kw1": "双月",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-双月"
+    },
+    {
+      "codeContains": "DZ01XXJ",
+      "kw1": "双月",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "香薰机-双月"
+    },
+    {
+      "codeContains": "DZ01XXJ",
+      "kw1": "单月",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "香薰机-单月"
+    },
+    {
+      "codeContains": "Y0101+DZFG",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "发光-单月"
+    },
+    {
+      "codeContains": "Y0102+DZFG",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "发光-双月"
+    },
+    {
+      "codeContains": "Y0201+DZFG",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "发光-播放器单月"
+    },
+    {
+      "codeContains": "Y0202+DZFG",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "发光-播放器双月"
+    },
+    {
+      "codeContains": "Y0301+DZFG",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "发光-群山单月"
+    },
+    {
+      "codeContains": "Y0302+DZFG",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "发光-群山双月"
+    },
+    {
+      "codeContains": "Y0401+DZFG",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "发光-小王子单月"
+    },
+    {
+      "codeContains": "Y0402+DZFG",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "发光-小王子双月"
+    },
+    {
+      "codeContains": "Y0501+DZFG",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "发光-兔子单月"
+    },
+    {
+      "codeContains": "Y0502+DZFG",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "发光-兔子双月"
+    },
+    {
+      "codeContains": "Y0602+DZFG",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "发光-情侣星座双月"
+    },
+    {
+      "codeContains": "Y0703+DZFG",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "发光-宇航员三月"
+    },
+    {
+      "codeContains": "Y0101+DZMK",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-单月"
+    },
+    {
+      "codeContains": "Y0102+DZMK",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-双月"
+    },
+    {
+      "codeContains": "Y0201+DZMK",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-播放器单月"
+    },
+    {
+      "codeContains": "Y0202+DZMK",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-播放器双月"
+    },
+    {
+      "codeContains": "Y0301+DZMK",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-群山单月"
+    },
+    {
+      "codeContains": "Y0302+DZMK",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-群山双月"
+    },
+    {
+      "codeContains": "Y0303+DZMK",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-群山三月"
+    },
+    {
+      "codeContains": "Y0401+DZMK",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-小王子单月"
+    },
+    {
+      "codeContains": "Y0402+DZMK",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-小王子双月"
+    },
+    {
+      "codeContains": "Y0501+DZMK",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-兔子单月"
+    },
+    {
+      "codeContains": "Y0502+DZMK",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-兔子双月"
+    },
+    {
+      "codeContains": "Y0602+DZMK",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-情侣星座双月"
+    },
+    {
+      "codeContains": "Y0801+DZMK",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-纪念单月"
+    },
+    {
+      "codeContains": "Y0802+DZMK",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-纪念双月"
+    },
+    {
+      "codeContains": "Y0901+DZMK",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-渐变单月"
+    },
+    {
+      "codeContains": "Y1002+DZMK",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-周年双月"
+    },
+    {
+      "codeContains": "Y1101+DZMK",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-黑带单月"
+    },
+    {
+      "codeContains": "Y1102+DZMK",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-黑带双月"
+    },
+    {
+      "codeContains": "Y1202+DZMK",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "透明-黑带周年双月"
+    },
+    {
+      "codeContains": "DZ1YHXXJ1",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "香薰机-单月"
+    },
+    {
+      "codeContains": "DZ2YHXXJ1",
+      "kw1": "",
+      "kw2": "",
+      "kw3": "",
+      "aNameReq": "any",
+      "msgReq": "any",
+      "result": "香薰机-双月"
+    }
+  ],
+  "packageRules": [
+    {
+      "codeContains": "DZFG0022",
+      "specIncludes1": "",
+      "specIncludes2": "",
+      "specExcludes1": "",
+      "specExcludes2": "",
+      "result": "发光-月亮手提袋"
+    },
+    {
+      "codeContains": "DZFG0021",
+      "specIncludes1": "",
+      "specIncludes2": "",
+      "specExcludes1": "",
+      "specExcludes2": "",
+      "result": "发光-月亮礼盒"
+    },
+    {
+      "codeContains": "DZMK0021",
+      "specIncludes1": "",
+      "specIncludes2": "",
+      "specExcludes1": "",
+      "specExcludes2": "",
+      "result": "透明-月亮礼盒"
+    },
+    {
+      "codeContains": "DZMK0022",
+      "specIncludes1": "",
+      "specIncludes2": "",
+      "specExcludes1": "",
+      "specExcludes2": "",
+      "result": "透明-月亮手提袋"
+    },
+    {
+      "codeContains": "DZFG0021SD01",
+      "specIncludes1": "",
+      "specIncludes2": "",
+      "specExcludes1": "",
+      "specExcludes2": "",
+      "result": "发光-圣诞礼盒"
+    },
+    {
+      "codeContains": "DZFG0022SD01",
+      "specIncludes1": "",
+      "specIncludes2": "",
+      "specExcludes1": "",
+      "specExcludes2": "",
+      "result": "发光-圣诞手提袋"
+    },
+    {
+      "codeContains": "DZMK0021SD01",
+      "specIncludes1": "",
+      "specIncludes2": "",
+      "specExcludes1": "",
+      "specExcludes2": "",
+      "result": "透明-圣诞礼盒"
+    },
+    {
+      "codeContains": "DZMK0022SD01",
+      "specIncludes1": "",
+      "specIncludes2": "",
+      "specExcludes1": "",
+      "specExcludes2": "",
+      "result": "透明-圣诞手提袋"
+    },
+    {
+      "codeContains": "DZMK0000",
+      "specIncludes1": "",
+      "specIncludes2": "",
+      "specExcludes1": "",
+      "specExcludes2": "",
+      "result": "透明款"
+    },
+    {
+      "codeContains": "DZFG00Q1",
+      "specIncludes1": "",
+      "specIncludes2": "",
+      "specExcludes1": "",
+      "specExcludes2": "",
+      "result": "发光-喜庆礼盒"
+    },
+    {
+      "codeContains": "DZFG00Q2",
+      "specIncludes1": "",
+      "specIncludes2": "",
+      "specExcludes1": "",
+      "specExcludes2": "",
+      "result": "发光-喜庆手提袋"
+    },
+    {
+      "codeContains": "DZFG00S1",
+      "specIncludes1": "",
+      "specIncludes2": "",
+      "specExcludes1": "",
+      "specExcludes2": "",
+      "result": "发光-生日礼盒"
+    },
+    {
+      "codeContains": "DZFG00S2",
+      "specIncludes1": "",
+      "specIncludes2": "",
+      "specExcludes1": "",
+      "specExcludes2": "",
+      "result": "发光-生日手提袋"
+    },
+    {
+      "codeContains": "DZMK00Q1",
+      "specIncludes1": "",
+      "specIncludes2": "",
+      "specExcludes1": "",
+      "specExcludes2": "",
+      "result": "透明-喜庆礼盒"
+    },
+    {
+      "codeContains": "DZMK00Q2",
+      "specIncludes1": "",
+      "specIncludes2": "",
+      "specExcludes1": "",
+      "specExcludes2": "",
+      "result": "透明-喜庆手提袋"
+    },
+    {
+      "codeContains": "DZMK00S1",
+      "specIncludes1": "",
+      "specIncludes2": "",
+      "specExcludes1": "",
+      "specExcludes2": "",
+      "result": "透明-生日礼盒"
+    },
+    {
+      "codeContains": "DZMK00S2",
+      "specIncludes1": "",
+      "specIncludes2": "",
+      "specExcludes1": "",
+      "specExcludes2": "",
+      "result": "透明-生日手提袋"
+    },
+    {
+      "codeContains": "DZMK0100",
+      "specIncludes1": "",
+      "specIncludes2": "",
+      "specExcludes1": "",
+      "specExcludes2": "",
+      "result": "黑色-透明"
+    },
+    {
+      "codeContains": "DZMK0121",
+      "specIncludes1": "",
+      "specIncludes2": "",
+      "specExcludes1": "",
+      "specExcludes2": "",
+      "result": "黑色-透明+月亮礼盒"
+    },
+    {
+      "codeContains": "DZMK0122",
+      "specIncludes1": "",
+      "specIncludes2": "",
+      "specExcludes1": "",
+      "specExcludes2": "",
+      "result": "黑色-透明+月亮手提袋"
+    },
+    {
+      "codeContains": "DZ1YH",
+      "specIncludes1": "",
+      "specIncludes2": "",
+      "specExcludes1": "",
+      "specExcludes2": "",
+      "result": "月相-香薰机"
+    },
+    {
+      "codeContains": "DZ2YH",
+      "specIncludes1": "",
+      "specIncludes2": "",
+      "specExcludes1": "",
+      "specExcludes2": "",
+      "result": "月相-香薰机"
+    },
+    {
+      "codeContains": "DZ00XXJ1",
+      "specIncludes1": "",
+      "specIncludes2": "",
+      "specExcludes1": "",
+      "specExcludes2": "",
+      "result": "月相-香薰机"
+    }
+  ],
+  "shieldWords": [
+    "顺丰",
+    "顺丰到付",
+    "发顺丰",
+    "今天发",
+    "顺丰陆运",
+    "发顺丰陆运",
+    "顺丰空运",
+    "发顺丰空运",
+    "补邮发顺丰"
+  ],
+  "fontRules": []
+}

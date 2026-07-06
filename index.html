@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>订单工作流 · 智能屏蔽词过滤系统</title>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <style>
+        * { box-sizing: border-box; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; }
+        body { background: #f0f4fa; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { max-width: 1600px; width: 100%; background: white; border-radius: 28px; box-shadow: 0 25px 50px -12px rgba(0,20,40,0.25); padding: 28px 24px; }
+        h1 { font-size: 2rem; font-weight: 600; color: #0a2942; margin-top: 0; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; border-bottom: 2px solid #e2ebf6; padding-bottom: 12px; }
+        .import-module, .export-module, .package-panel, .settings-panel, .shield-panel, .font-panel { background: #ffffff; border-radius: 20px; border: 1px solid #dfe7ef; box-shadow: 0 6px 16px -8px rgba(0,32,64,0.12); margin-bottom: 24px; overflow: hidden; }
+        .module-header { background: #f9fcff; padding: 16px 24px; border-bottom: 1px solid #dde5ed; font-weight: 600; font-size: 1.2rem; color: #1e3b5c; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+        .badge { background: #d4e2f0; border-radius: 24px; padding: 4px 14px; font-size: 0.85rem; color: #1a3c5e; }
+        .table-wrapper { overflow-x: auto; padding: 16px 20px; background: #fdfdfe; max-height: 350px; overflow-y: auto; }
+        table { border-collapse: collapse; width: 100%; font-size: 0.85rem; min-width: 900px; }
+        th { background: #eef3f9; color: #1f3a5f; font-weight: 600; padding: 12px 10px; border: 1px solid #cbd6e4; text-align: left; font-size: 0.8rem; }
+        td { padding: 10px 10px; border: 1px solid #d8e0e9; background: white; }
+        .editable-input { width: 100%; border: 1px solid #b3c7db; border-radius: 6px; padding: 6px 8px; font-size: 0.8rem; background: white; }
+        .btn-group { display: flex; gap: 12px; padding: 16px 24px; background: #f1f6fc; border-top: 1px solid #dae2ec; flex-wrap: wrap; }
+        .btn { background: white; border: 1px solid #b8cade; border-radius: 60px; padding: 10px 24px; font-weight: 500; font-size: 0.9rem; color: #1f3d64; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-primary { background: #1e4770; border-color: #103457; color: white; }
+        .btn-success { background: #2a6d4c; border-color: #1d4f36; color: white; }
+        .file-input { display: none; }
+        .field-selector { background: #f9fcff; border-radius: 16px; padding: 16px 24px; margin: 0 20px 16px 20px; border: 1px solid #d0ddee; }
+        .field-grid { display: flex; flex-wrap: wrap; gap: 12px 20px; max-height: 130px; overflow-y: auto; padding: 10px 8px; background: white; border-radius: 16px; border: 1px solid #dae2ec; }
+        .field-item { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; background: #f2f8ff; padding: 5px 14px; border-radius: 40px; border: 1px solid #c0d2e9; cursor: pointer; }
+        .field-item input { accent-color: #1e4770; }
+        .btn-small { padding: 6px 18px; font-size: 0.8rem; border-radius: 40px; background: white; border: 1px solid #b0c6df; cursor: pointer; }
+        .settings-title { font-weight: 600; color: #1f3e64; font-size: 1.2rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 0 24px; padding-top: 22px; }
+        .scrollable-rules { max-height: 400px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 16px; background: white; margin: 0 24px 16px 24px; }
+        .keyword-list { display: flex; flex-wrap: wrap; gap: 8px 12px; padding: 12px; min-height: 80px; background: #f9fafc; border-radius: 12px; }
+        .keyword-tag { background: #e2ecf9; border-radius: 40px; padding: 5px 16px; font-size: 0.85rem; color: #1f4172; border: 1px solid #b9d0e7; display: inline-flex; align-items: center; gap: 8px; }
+        .keyword-tag .remove { cursor: pointer; color: #7b94b0; font-weight: bold; }
+        .keyword-tag .remove:hover { color: #c00; }
+        .add-keyword { display: flex; gap: 8px; margin-top: 10px; padding: 0 12px 12px 12px; }
+        .add-keyword input { flex: 1; border: 1px solid #b3c7db; border-radius: 60px; padding: 8px 16px; }
+        .add-keyword button { background: white; border: 1px solid #1e4770; color: #1e4770; border-radius: 60px; padding: 8px 22px; cursor: pointer; }
+        .font-rule-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .font-rule-table th, .font-rule-table td { padding: 10px 8px; border: 1px solid #c0d0e5; text-align: center; }
+        .font-rule-table th { background: #dae6f2; }
+        .font-rule-table input, .font-rule-table select { width: 100%; padding: 6px 10px; border-radius: 30px; border: 1px solid #b3c7db; }
+        .example-hint { background: #f2f2f2; border-radius: 16px; padding: 12px; font-size: 0.8rem; color: #2a4b77; margin: 0 24px 16px 24px; }
+        .footer-note { margin-top: 20px; font-size: 0.85rem; color: #4d627a; border-top: 1px dashed #b8cde0; padding-top: 16px; text-align: center; }
+        .field-mapping-hint, .parse-hint { background: #e6f0fa; padding: 8px 16px; border-radius: 30px; font-size: 0.85rem; margin-bottom: 16px; }
+        .save-indicator { display: inline-block; margin-left: 10px; font-size: 0.8rem; color: #2a6d4c; }
+        .config-buttons { display: flex; gap: 10px; margin-left: auto; }
+        .batch-buttons { display: flex; gap: 8px; margin-left: 15px; }
+        .template-table, .package-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .template-table th, .package-table th { background: #dae6f2; padding: 10px 8px; font-weight: 600; text-align: center; border: 1px solid #c0d0e5; position: sticky; top: 0; }
+        .template-table td, .package-table td { padding: 8px 6px; border: 1px solid #c0d0e5; background: white; }
+        .template-table input, .template-table select, .package-table input { width: 100%; border: 1px solid #b3c7db; border-radius: 30px; padding: 6px 10px; font-size: 0.8rem; }
+        .removed-badge { background: #ffe6e6; color: #b33; border-radius: 14px; padding: 2px 8px; font-size: 0.7rem; margin-left: 6px; white-space: nowrap; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>
+        ⚙️ 订单工作流 · 智能屏蔽词过滤系统
+        <span class="save-indicator" id="saveIndicator">💾 已自动保存</span>
+        <span class="config-buttons">
+            <button class="btn btn-success" id="saveConfigBtn">💾 保存全部配置</button>
+            <input type="file" id="loadConfigFile" class="file-input" accept=".json">
+            <button class="btn btn-primary" id="loadConfigBtn">📂 手动加载配置</button>
+        </span>
+    </h1>
+
+    <div class="field-mapping-hint">✅ 正确映射：付款日期→下单时间，店铺名称→店铺名，线上订单号→订单号，内部订单号→内部号</div>
+    <div class="parse-hint">📌 配置已内置 · 点击"保存全部配置"下载JSON · 下次用"手动加载配置"导入即可 · 修改规则后自动保存到本机</div>
+
+    <!-- 1. 导入模块 -->
+    <div class="import-module">
+        <div class="module-header"><span>📋 导入模块 · 原始订单</span><span class="badge">可编辑 / 支持XLSX导入</span></div>
+        <div class="table-wrapper">
+            <table class="import-table">
+                <thead><tr><th>平台站点</th><th>付款日期</th><th>店铺名称</th><th>线上订单号</th><th>内部订单号</th><th>商品编码</th><th>颜色及规格</th><th>数量</th><th>订单备注</th></tr></thead>
+                <tbody id="importBody"></tbody>
+            </table>
+        </div>
+        <div class="btn-group"><input type="file" id="xlsxFileInput" class="file-input" accept=".xlsx,.xls,.csv"><button class="btn file-label" id="importFileBtn">📂 导入 XLSX</button><button class="btn" id="addRowBtn">➕ 添加一行</button><button class="btn" id="resetExampleBtn">🔄 重置示例</button></div>
+    </div>
+
+    <!-- 2. 导出模块 -->
+    <div class="export-module">
+        <div class="module-header"><span>📎 导出模块 · 处理后数据</span><span class="badge">屏蔽词仅删除词汇，保留备注其余部分</span></div>
+        <div class="field-selector"><div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span>🔽 勾选要导出的字段</span><span><button class="btn-small" id="selectAllBtn">全选</button><button class="btn-small" id="deselectAllBtn">取消全选</button><button class="btn-small btn-primary" id="generateExportBtn" style="margin-left:10px;">⏎ 刷新预览</button></span></div><div class="field-grid" id="fieldGrid"></div></div>
+        <div class="table-wrapper"><table class="export-table"><thead id="exportHeader"><tr></thead><tbody id="exportBody"></tbody></table></div>
+        <div class="btn-group" style="justify-content: flex-end;"><button class="btn" id="copyExportBtn">📋 复制表格</button><button class="btn btn-success" id="exportXlsxBtn">💾 导出选中字段为 XLSX</button></div>
+    </div>
+
+    <!-- 3. 屏蔽词规则模块 (仅删除词汇，不过滤整行) -->
+    <div class="shield-panel">
+        <div class="module-header"><span>🛡️ 订单备注屏蔽词 (仅移除包含的词汇，优先匹配长词汇)</span><div class="batch-buttons"><button class="btn-small" id="exportShieldBtn">📤 导出屏蔽词</button><input type="file" id="importShieldFile" class="file-input" accept=".json,.xlsx,.xls,.csv"><button class="btn-small" id="importShieldBtn">📥 导入屏蔽词</button><button class="btn-small" id="addShieldBtn">➕ 添加屏蔽词</button></div></div>
+        <div class="keyword-list" id="shieldList"></div>
+        <div class="add-keyword"><input type="text" id="newShieldWord" placeholder="输入屏蔽词，如：发顺丰"><button id="addShieldWordBtn">添加</button></div>
+        <div class="example-hint">✅ 新规则：备注中的屏蔽词将被删除（优先匹配长词汇）。例如同时有"顺丰"和"发顺丰"，"发顺丰"会被完整移除，"顺丰"只移除单独的"顺丰"。</div>
+    </div>
+
+    <!-- 4. 套餐规则模块 -->
+    <div class="package-panel">
+        <div class="module-header"><span>📦 套餐规则</span><div class="batch-buttons"><button class="btn-small" id="exportPackageRulesBtn">📤 导出XLSX</button><button class="btn-small" id="exportPackageRulesJSONBtn">📄 导出JSON</button><input type="file" id="importPackageFile" class="file-input" accept=".json,.xlsx,.xls,.csv"><button class="btn-small" id="importPackageRulesBtn">📥 导入</button><button class="btn-small" id="addPackageRuleBtn">➕ 添加规则</button></div></div>
+        <div class="package-content"><div class="scrollable-rules"><table class="package-table"><thead><tr><th>商品编码包含</th><th>规格包含1</th><th>规格包含2</th><th>规格排除1</th><th>规格排除2</th><th>结果</th><th></th></tr></thead><tbody id="packageRuleBody"></tbody></table></div><div class="example-hint">✅ 按匹配关键词数量排序</div></div>
+    </div>
+
+    <!-- 5. 模板名字匹配规则 -->
+    <div class="settings-panel">
+        <div class="settings-title"><span>🛠️ 模板名字匹配规则</span><div class="batch-buttons"><button class="btn-small" id="exportTemplateRulesBtn">📤 导出XLSX</button><button class="btn-small" id="exportTemplateRulesJSONBtn">📄 导出JSON</button><input type="file" id="importTemplateFile" class="file-input" accept=".json,.xlsx,.xls,.csv"><button class="btn-small" id="importTemplateRulesBtn">📥 导入</button><button class="btn-small" id="addFormulaRowBtn">➕ 添加规则</button></div></div>
+        <div class="scrollable-rules"><table class="template-table"><thead><tr><th>商品编码包含</th><th>关键词1</th><th>关键词2</th><th>关键词3</th><th>A名字要求</th><th>寄语1要求</th><th>返回结果</th><th></th></tr></thead><tbody id="formulaBody"></tbody></table></div>
+        <div class="example-hint">✅ 按关键词数量降序匹配 | A名字/寄语1要求：可为空/不为空/为空</div>
+    </div>
+
+    <!-- 6. 字体匹配规则模块 -->
+    <div class="font-panel">
+        <div class="module-header"><span>✍️ 字体匹配规则 (模板名字条件 → 目标列 → 源列 → 内容类型 → 字体)</span><div class="batch-buttons"><button class="btn-small" id="exportFontRulesBtn">📤 导出字体规则</button><input type="file" id="importFontFile" class="file-input" accept=".json,.xlsx,.xls,.csv"><button class="btn-small" id="importFontRulesBtn">📥 导入字体规则</button><button class="btn-small" id="addFontRuleBtn">➕ 添加规则</button></div></div>
+        <div class="scrollable-rules">
+            <table class="font-rule-table">
+                <thead>
+                    <tr><th style="width:20%">模板名字包含</th><th style="width:20%">目标列(字体列)</th><th style="width:20%">源列(取值列)</th><th style="width:15%">内容类型</th><th style="width:20%">结果字体</th><th style="width:5%"></th></tr>
+                </thead>
+                <tbody id="fontRuleBody"></tbody>
+            </table>
+        </div>
+        <div class="example-hint">✅ 内容类型：空白/中文/英文/中文+英文 | 模板名字包含：匹配模板名字中包含的关键词 | 目标列可手动输入任意字体列名</div>
+    </div>
+
+    <div class="footer-note">✨ 屏蔽词优先匹配长词汇（如"发顺丰"优先于"顺丰"）| 字体规则支持模板名字条件 | 所有规则自动保存</div>
+</div>
+
+<script>
+(function() {
+    const STORAGE_KEYS = {
+        TEMPLATE_RULES: 'templateRules', PACKAGE_RULES: 'packageRules',
+        SHIELD_WORDS: 'shieldWords', FONT_RULES: 'fontRules'
+    };
+
+    // 默认数据（已内置用户配置，局域网直接可用）
+    let templateRules = [{"codeContains": "DZMK", "kw1": "黑带", "kw2": "周年", "kw3": "双月", "aNameReq": "any", "msgReq": "any", "result": "透明-黑带周年双月"}, {"codeContains": "DZFG", "kw1": "情侣", "kw2": "星座", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "发光-情侣星座双月"}, {"codeContains": "DZMK", "kw1": "情侣", "kw2": "星座", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-情侣星座双月"}, {"codeContains": "DZFG", "kw1": "群山", "kw2": "单月", "kw3": "", "aNameReq": "empty", "msgReq": "empty", "result": "发光-群山单月-单日期"}, {"codeContains": "DZFG", "kw1": "群山", "kw2": "单月", "kw3": "", "aNameReq": "any", "msgReq": "required", "result": "发光-群山单月-寄语"}, {"codeContains": "DZFG", "kw1": "小王子", "kw2": "单月", "kw3": "", "aNameReq": "empty", "msgReq": "empty", "result": "发光-小王子单月-单日期"}, {"codeContains": "DZFG", "kw1": "小王子", "kw2": "单月", "kw3": "", "aNameReq": "any", "msgReq": "required", "result": "发光-小王子单月-寄语"}, {"codeContains": "DZMK", "kw1": "群山", "kw2": "单月", "kw3": "", "aNameReq": "empty", "msgReq": "empty", "result": "透明-群山单月-单日期"}, {"codeContains": "DZMK", "kw1": "群山", "kw2": "单月", "kw3": "", "aNameReq": "any", "msgReq": "required", "result": "透明-群山单月-寄语"}, {"codeContains": "DZMK", "kw1": "小王子", "kw2": "单月", "kw3": "", "aNameReq": "empty", "msgReq": "empty", "result": "透明-小王子单月-单日期"}, {"codeContains": "DZMK", "kw1": "小王子", "kw2": "单月", "kw3": "", "aNameReq": "any", "msgReq": "required", "result": "透明-小王子单月-寄语"}, {"codeContains": "DZFG", "kw1": "情侣", "kw2": "双月", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "发光-情侣星座双月"}, {"codeContains": "DZMK", "kw1": "情侣", "kw2": "双月", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-情侣星座双月"}, {"codeContains": "DZFG", "kw1": "播放", "kw2": "双月", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "发光-播放器双月"}, {"codeContains": "DZFG", "kw1": "播放", "kw2": "单月", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "发光-播放器单月"}, {"codeContains": "DZFG", "kw1": "兔子", "kw2": "双月", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "发光-兔子双月"}, {"codeContains": "DZFG", "kw1": "兔子", "kw2": "单月", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "发光-兔子单月"}, {"codeContains": "DZFG", "kw1": "宇航员", "kw2": "三月", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "发光-宇航员三月"}, {"codeContains": "DZFG", "kw1": "群山", "kw2": "双月", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "发光-群山双月"}, {"codeContains": "DZFG", "kw1": "小王子", "kw2": "双月", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "发光-小王子双月"}, {"codeContains": "DZMK", "kw1": "渐变", "kw2": "单月", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-渐变单月"}, {"codeContains": "DZMK", "kw1": "播放", "kw2": "双月", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-播放器双月"}, {"codeContains": "DZMK", "kw1": "播放", "kw2": "单月", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-播放器单月"}, {"codeContains": "DZMK", "kw1": "黑带", "kw2": "双月", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-黑带双月"}, {"codeContains": "DZMK", "kw1": "黑带", "kw2": "单月", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-黑带单月"}, {"codeContains": "DZMK", "kw1": "纪念", "kw2": "双月", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-纪念双月"}, {"codeContains": "DZMK", "kw1": "纪念", "kw2": "单月", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-纪念单月"}, {"codeContains": "DZMK", "kw1": "周年", "kw2": "双月", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-周年双月"}, {"codeContains": "DZMK", "kw1": "群山", "kw2": "双月", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-群山双月"}, {"codeContains": "DZMK", "kw1": "群山", "kw2": "三月", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-群山三月"}, {"codeContains": "DZMK", "kw1": "兔子", "kw2": "单月", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-兔子单月"}, {"codeContains": "DZMK", "kw1": "兔子", "kw2": "双月", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-兔子双月"}, {"codeContains": "DZMK", "kw1": "小王子", "kw2": "双月", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-小王子双月"}, {"codeContains": "DZFG", "kw1": "单月", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "发光-单月"}, {"codeContains": "DZFG", "kw1": "双月", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "发光-双月"}, {"codeContains": "DZMK", "kw1": "单月", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-单月"}, {"codeContains": "DZMK", "kw1": "双月", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-双月"}, {"codeContains": "DZ01XXJ", "kw1": "双月", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "香薰机-双月"}, {"codeContains": "DZ01XXJ", "kw1": "单月", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "香薰机-单月"}, {"codeContains": "Y0101+DZFG", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "发光-单月"}, {"codeContains": "Y0102+DZFG", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "发光-双月"}, {"codeContains": "Y0201+DZFG", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "发光-播放器单月"}, {"codeContains": "Y0202+DZFG", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "发光-播放器双月"}, {"codeContains": "Y0301+DZFG", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "发光-群山单月"}, {"codeContains": "Y0302+DZFG", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "发光-群山双月"}, {"codeContains": "Y0401+DZFG", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "发光-小王子单月"}, {"codeContains": "Y0402+DZFG", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "发光-小王子双月"}, {"codeContains": "Y0501+DZFG", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "发光-兔子单月"}, {"codeContains": "Y0502+DZFG", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "发光-兔子双月"}, {"codeContains": "Y0602+DZFG", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "发光-情侣星座双月"}, {"codeContains": "Y0703+DZFG", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "发光-宇航员三月"}, {"codeContains": "Y0101+DZMK", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-单月"}, {"codeContains": "Y0102+DZMK", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-双月"}, {"codeContains": "Y0201+DZMK", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-播放器单月"}, {"codeContains": "Y0202+DZMK", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-播放器双月"}, {"codeContains": "Y0301+DZMK", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-群山单月"}, {"codeContains": "Y0302+DZMK", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-群山双月"}, {"codeContains": "Y0303+DZMK", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-群山三月"}, {"codeContains": "Y0401+DZMK", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-小王子单月"}, {"codeContains": "Y0402+DZMK", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-小王子双月"}, {"codeContains": "Y0501+DZMK", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-兔子单月"}, {"codeContains": "Y0502+DZMK", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-兔子双月"}, {"codeContains": "Y0602+DZMK", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-情侣星座双月"}, {"codeContains": "Y0801+DZMK", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-纪念单月"}, {"codeContains": "Y0802+DZMK", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-纪念双月"}, {"codeContains": "Y0901+DZMK", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-渐变单月"}, {"codeContains": "Y1002+DZMK", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-周年双月"}, {"codeContains": "Y1101+DZMK", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-黑带单月"}, {"codeContains": "Y1102+DZMK", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-黑带双月"}, {"codeContains": "Y1202+DZMK", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "透明-黑带周年双月"}, {"codeContains": "DZ1YHXXJ1", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "香薰机-单月"}, {"codeContains": "DZ2YHXXJ1", "kw1": "", "kw2": "", "kw3": "", "aNameReq": "any", "msgReq": "any", "result": "香薰机-双月"}];
+    let packageRules = [{"codeContains": "DZFG0022", "specIncludes1": "", "specIncludes2": "", "specExcludes1": "", "specExcludes2": "", "result": "发光-月亮手提袋"}, {"codeContains": "DZFG0021", "specIncludes1": "", "specIncludes2": "", "specExcludes1": "", "specExcludes2": "", "result": "发光-月亮礼盒"}, {"codeContains": "DZMK0021", "specIncludes1": "", "specIncludes2": "", "specExcludes1": "", "specExcludes2": "", "result": "透明-月亮礼盒"}, {"codeContains": "DZMK0022", "specIncludes1": "", "specIncludes2": "", "specExcludes1": "", "specExcludes2": "", "result": "透明-月亮手提袋"}, {"codeContains": "DZFG0021SD01", "specIncludes1": "", "specIncludes2": "", "specExcludes1": "", "specExcludes2": "", "result": "发光-圣诞礼盒"}, {"codeContains": "DZFG0022SD01", "specIncludes1": "", "specIncludes2": "", "specExcludes1": "", "specExcludes2": "", "result": "发光-圣诞手提袋"}, {"codeContains": "DZMK0021SD01", "specIncludes1": "", "specIncludes2": "", "specExcludes1": "", "specExcludes2": "", "result": "透明-圣诞礼盒"}, {"codeContains": "DZMK0022SD01", "specIncludes1": "", "specIncludes2": "", "specExcludes1": "", "specExcludes2": "", "result": "透明-圣诞手提袋"}, {"codeContains": "DZMK0000", "specIncludes1": "", "specIncludes2": "", "specExcludes1": "", "specExcludes2": "", "result": "透明款"}, {"codeContains": "DZFG00Q1", "specIncludes1": "", "specIncludes2": "", "specExcludes1": "", "specExcludes2": "", "result": "发光-喜庆礼盒"}, {"codeContains": "DZFG00Q2", "specIncludes1": "", "specIncludes2": "", "specExcludes1": "", "specExcludes2": "", "result": "发光-喜庆手提袋"}, {"codeContains": "DZFG00S1", "specIncludes1": "", "specIncludes2": "", "specExcludes1": "", "specExcludes2": "", "result": "发光-生日礼盒"}, {"codeContains": "DZFG00S2", "specIncludes1": "", "specIncludes2": "", "specExcludes1": "", "specExcludes2": "", "result": "发光-生日手提袋"}, {"codeContains": "DZMK00Q1", "specIncludes1": "", "specIncludes2": "", "specExcludes1": "", "specExcludes2": "", "result": "透明-喜庆礼盒"}, {"codeContains": "DZMK00Q2", "specIncludes1": "", "specIncludes2": "", "specExcludes1": "", "specExcludes2": "", "result": "透明-喜庆手提袋"}, {"codeContains": "DZMK00S1", "specIncludes1": "", "specIncludes2": "", "specExcludes1": "", "specExcludes2": "", "result": "透明-生日礼盒"}, {"codeContains": "DZMK00S2", "specIncludes1": "", "specIncludes2": "", "specExcludes1": "", "specExcludes2": "", "result": "透明-生日手提袋"}, {"codeContains": "DZMK0100", "specIncludes1": "", "specIncludes2": "", "specExcludes1": "", "specExcludes2": "", "result": "黑色-透明"}, {"codeContains": "DZMK0121", "specIncludes1": "", "specIncludes2": "", "specExcludes1": "", "specExcludes2": "", "result": "黑色-透明+月亮礼盒"}, {"codeContains": "DZMK0122", "specIncludes1": "", "specIncludes2": "", "specExcludes1": "", "specExcludes2": "", "result": "黑色-透明+月亮手提袋"}, {"codeContains": "DZ1YH", "specIncludes1": "", "specIncludes2": "", "specExcludes1": "", "specExcludes2": "", "result": "月相-香薰机"}, {"codeContains": "DZ2YH", "specIncludes1": "", "specIncludes2": "", "specExcludes1": "", "specExcludes2": "", "result": "月相-香薰机"}, {"codeContains": "DZ00XXJ1", "specIncludes1": "", "specIncludes2": "", "specExcludes1": "", "specExcludes2": "", "result": "月相-香薰机"}];
+    let shieldWords = ["顺丰", "顺丰到付", "发顺丰", "今天发", "顺丰陆运", "发顺丰陆运", "顺丰空运", "发顺丰空运", "补邮发顺丰"];
+    let fontRules = [{"templateContains": "", "targetCol": "寄语1-字体", "sourceCol": "寄语1", "contentType": "chinese", "result": "钟齐陈伟勋硬笔行楷简"}, {"templateContains": "", "targetCol": "寄语1-字体", "sourceCol": "寄语1", "contentType": "english", "result": "Cervanttis"}, {"templateContains": "", "targetCol": "寄语1-字体", "sourceCol": "寄语1", "contentType": "mixed", "result": "钟齐陈伟勋硬笔行楷简"}];
+
+    const fontSourceCols = ["A生日","A名字","B生日","B名字","C生日","C姓名","寄语1","寄语2","寄语3","寄语4"];
+
+    function sortTemplateRules() { templateRules.sort((a,b)=>{let ca=(a.kw1?.trim()?1:0)+(a.kw2?.trim()?1:0)+(a.kw3?.trim()?1:0);let cb=(b.kw1?.trim()?1:0)+(b.kw2?.trim()?1:0)+(b.kw3?.trim()?1:0);return cb-ca;}); }
+    function sortPackageRules() { packageRules.sort((a,b)=>{let ca=(a.specIncludes1?.trim()?1:0)+(a.specIncludes2?.trim()?1:0);let cb=(b.specIncludes1?.trim()?1:0)+(b.specIncludes2?.trim()?1:0);return cb-ca;}); }
+    function saveAll() {
+        localStorage.setItem('bgzh_templateRules', JSON.stringify(templateRules));
+        localStorage.setItem('bgzh_packageRules', JSON.stringify(packageRules));
+        localStorage.setItem('bgzh_shieldWords', JSON.stringify(shieldWords));
+        localStorage.setItem('bgzh_fontRules', JSON.stringify(fontRules));
+        let ind = document.getElementById('saveIndicator');
+        if(ind){ ind.textContent='💾 已保存'; ind.style.opacity='1'; setTimeout(()=>{ ind.style.opacity='0.5'; },1500); }
+    }
+    // 初始化：优先读 localStorage 中的本机修改，否则用内置默认值
+    (function initData() {
+        let t=localStorage.getItem('bgzh_templateRules'); if(t) try{ templateRules=JSON.parse(t); }catch(e){}
+        let p=localStorage.getItem('bgzh_packageRules'); if(p) try{ packageRules=JSON.parse(p); }catch(e){}
+        let s=localStorage.getItem('bgzh_shieldWords'); if(s) try{ shieldWords=JSON.parse(s); }catch(e){}
+        let f=localStorage.getItem('bgzh_fontRules'); if(f) try{ fontRules=JSON.parse(f); }catch(e){}
+        sortTemplateRules(); sortPackageRules();
+    })();
+
+    // 核心：屏蔽词仅删除备注中的词汇，优先匹配长词汇
+    function removeShieldWordsFromRemark(remark) {
+        if (!remark || !shieldWords.length) return remark || '';
+        let processed = remark;
+        const sortedShieldWords = [...shieldWords].sort((a, b) => b.length - a.length);
+        for (let word of sortedShieldWords) {
+            if (word && word.trim() !== '') {
+                const regex = new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+                processed = processed.replace(regex, '');
+            }
+        }
+        processed = processed.replace(/\s+/g, ' ').replace(/[,，]+/g, '，').replace(/，\s*，/g, '，').trim();
+        processed = processed.replace(/^[，,、]+|[，,、]+$/g, '');
+        return processed;
+    }
+
+    const exampleRows = [
+        ["淘宝", "2025-03-19", "月亮小店", "TAO123456", "IN-001", "DZFG", "播放器双月", "2", "名字：弈双利，寄语：祝好，在数不尽的明天"],
+        ["京东", "2025-03-20", "星光杂货", "JD789012", "IN-002", "DZFG", "群山双月", "1", "日期是 1999-04-18 第二个是 2026-04-18名字：Sherry Shi 寄语：Happy Birthday"],
+        ["拼多多", "2025-03-18", "玲玲礼品", "PDD345678", "IN-003", "DZMK", "纪念双月", "3", "05.04/03.24 1994  LX, 寄语：烟火年年，亲人常伴，共赴漫长岁月。, 5.20 /4.27 1990  GP"],
+        ["天猫", "2025-03-21", "月光工坊", "TM001", "IN-004", "DZMK", "群山双月", "1", "阴历1993.4.20阳历2020.9.29寄语：Happy Birthday"],
+        ["拼多多", "2025-03-22", "礼品集", "PDD002", "IN-005", "DZFG", "小王子单月", "1", "19840420 沐"],
+    ];
+    const importBody = document.getElementById('importBody');
+    function renderImportRows(rows) { importBody.innerHTML = ''; rows.forEach(row=>{let tr=document.createElement('tr');for(let i=0;i<9;i++){let td=document.createElement('td');let inp=document.createElement('input');inp.type='text';inp.className='editable-input';inp.value=row[i]||'';td.appendChild(inp);tr.appendChild(td);}importBody.appendChild(tr);});}
+    renderImportRows(exampleRows);
+    document.getElementById('addRowBtn')?.addEventListener('click',()=>{let rows=getImportData();rows.push(["新站点","2025-01-01","新店铺","ORD-","INT-","DZFG","播放器双月","1","请发顺丰快递"]);renderImportRows(rows);renderExportTable();});
+    document.getElementById('resetExampleBtn')?.addEventListener('click',()=>{renderImportRows(exampleRows);renderExportTable();});
+    function getImportData(){let trs=importBody.querySelectorAll('tr');let data=[];for(let tr of trs){let inputs=tr.querySelectorAll('td input');if(inputs.length===9)data.push(Array.from(inputs).map(i=>i.value.trim()));}return data;}
+    function excelDateToJSDate(serial){if(typeof serial!=='number')return serial;let d=new Date((serial-25569)*86400*1000);return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;}
+
+    // ══════════════════════════════════════════════════════════════════
+    // 智能备注解析模块 v4.0
+    // 支持：标签式(名字:/寄语:)、逗号/分号分割、英文月份日期、
+    //       阴历/阳历前缀、8位纯数字日期、月.日/月.日 年 双日期格式、
+    //       英文全名(Sherry Shi)、单字符缩写(LX/GP/W.S)、不加寄语标记
+    // ══════════════════════════════════════════════════════════════════
+
+    function removeBracketNotes(t) {
+        return (t || '').replace(/【[^】]*】/g, '').replace(/\[[^\]]*\]/g, '').trim();
+    }
+
+    const EN_MONTHS = {
+        jan:1,january:1,feb:2,february:2,mar:3,march:3,apr:4,april:4,
+        may:5,jun:6,june:6,jul:7,july:7,aug:8,august:8,
+        sep:9,september:9,oct:10,october:10,nov:11,november:11,dec:12,december:12
+    };
+    const EN_MON_RE = 'January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec';
+    const EN_MON_SET = new Set(Object.keys(EN_MONTHS));
+
+    function fmtDate(y, m, d) {
+        y = String(y); m = String(m); d = String(d);
+        if (y.length === 2) y = (+y <= 30 ? '20' : '19') + y;
+        if (+y < 1900 || +y > 2100 || +m < 1 || +m > 12 || +d < 1 || +d > 31) return null;
+        return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+    }
+
+    function extractDates(str) {
+        const dates = [];
+        const push = dt => { if (dt && !dates.includes(dt)) dates.push(dt); };
+        let s = str;
+
+        // 阴历/阳历前缀 + 数字日期
+        s = s.replace(/(阴历|阳历|农历|公历)\s*(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/g,
+            (_, _p, y, m, d) => { push(fmtDate(y, m, d)); return '§D§'; });
+        // 阴历/阳历前缀 + 中文年月日（阴历1993年5月9日）
+        s = s.replace(/(阴历|阳历|农历|公历)\s*(\d{4})年\s*(\d{1,2})月\s*(\d{1,2})[日号]?/g,
+            (_, _p, y, m, d) => { push(fmtDate(y, m, d)); return '§D§'; });
+        // 清理提取后遗留的孤立阴历/阳历词
+        s = s.replace(/\s*(阴历|阳历|农历|公历)\s*(?=§D§)/g, '');
+        s = s.replace(/(?<=§D§)\s*(阴历|阳历|农历|公历)\s*/g, '');
+
+        // 英文月份：June 21, 2000 / Apr 18 2001
+        s = s.replace(new RegExp(`(${EN_MON_RE})[\\s.]*?(\\d{1,2})[,，\\s]+(\\d{4})`, 'gi'),
+            (_, mon, day, yr) => { const mo = EN_MONTHS[mon.toLowerCase()]; push(mo ? fmtDate(yr, mo, day) : null); return '§D§'; });
+        s = s.replace(new RegExp(`(\\d{1,2})[\\s.]+(${EN_MON_RE})[\\s.,]+(\\d{4})`, 'gi'),
+            (_, day, mon, yr) => { const mo = EN_MONTHS[mon.toLowerCase()]; push(mo ? fmtDate(yr, mo, day) : null); return '§D§'; });
+
+        // 月.日/月.日 年 格式：05.04/03.24 1994
+        s = s.replace(/(\d{1,2})\.(\d{1,2})\s*\/\s*(\d{1,2})\.(\d{1,2})\s+(\d{4})/g,
+            (_, m1, d1, m2, d2, yr) => { push(fmtDate(yr, m1, d1)); push(fmtDate(yr, m2, d2)); return '§D§'; });
+
+        // 8位纯数字日期：19840420
+        s = s.replace(/\b(\d{4})(\d{2})(\d{2})\b/g, (_, y, m, d) => {
+            const dt = fmtDate(y, m, d);
+            if (dt) { push(dt); return '§D§'; }
+            return _;
+        });
+
+        // 标准数字日期：2001-04-18 / 2001.04.18
+        s = s.replace(/(\d{4})[.\-\/年](\d{1,2})[.\-\/月](\d{1,2})日?/g,
+            (_, y, m, d) => { push(fmtDate(y, m, d)); return '§D§'; });
+
+        // 月/日/年：04/18/2001
+        s = s.replace(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/g,
+            (_, m, d, y) => { push(fmtDate(y, m, d)); return '§D§'; });
+
+        // 中文年月日（支持日/号）
+        s = s.replace(/(\d{4})年\s*(\d{1,2})月\s*(\d{1,2})[日号]?/g,
+            (_, y, m, d) => { push(fmtDate(y, m, d)); return '§D§'; });
+
+        // 年 月.日 格式：1992 2.23
+        s = s.replace(/\b((?:19|20)\d{2})\s+(\d{1,2})\.(\d{1,2})\b/g, function(_, y, m, d) {
+            var dt = fmtDate(y, m, d);
+            if (dt) { push(dt); return '§D§'; }
+            return _;
+        });
+
+        // 清理 '日期 日期值' 中的'日期'前缀（无冒号的情况）
+        s = s.replace(/(?:^|(?<=[，,；;\s]))日期\s+(?=§D§|\d)/g, '');
+
+        // 清理描述性碎片词
+        s = s.replace(/[一两三四五六七八九十]\s*个?\s*(?:日期|期)\s*是?\s*/g, ' ');
+        // 清理 '日期为/日期是/只看日期' 等描述性前缀（提取日期后残留）
+        s = s.replace(/日期\s*[为是]\s*/g, '');
+        s = s.replace(/只看日期\s*[数\d]*\s*行?\s*/g, '');
+        s = s.replace(/仅看日期\s*/g, '');
+        s = s.replace(/第\s*[一二三四两]\s*个?\s*是?\s*/g, ' ');
+        s = s.replace(/\d+\s*年的这个/g, ' ');
+        s = s.replace(/不用标注上?/g, ' ');
+
+        return { dates, cleaned: s };
+    }
+
+    const NOT_NAME = new Set([
+        '平安喜乐','得偿所愿','万事如意','心想事成','岁岁平安','幸福快乐','一生平安',
+        '计划','讲话','内容','剩余','备注','手写','刻字','顺丰','快递',
+        '加急','普通','礼盒','手提袋','套餐','名字','姓名','人名','寄语','默认',
+        '不加寄语','不用寄语','寄语默认','阴历','阳历','农历','公历',
+        '带','不带','定制信息模版','不加','各出一版图','左边','右边','月亮',
+        '日','期','名','字','语','生','可','做','单','英','文',
+        '日期为','日期是','只看','仅看','数行','数列',
+        '不负','立之年','万里','平安','顺利',  // 常见描述词
+    ]);
+    // 常见英文寄语词，不能被误认为名字
+    const EN_PHRASE_WORDS = new Set([
+        'happy','birthday','keep','simple','smooth','stupid','believe','power',
+        'random','universe','works','favor','hoping','right','things','difficult',
+        'try','and','the','for','with','that','this','love','life','time','every',
+        'world','luck','shine','beautifully','bravely','wishing','loads','money',
+        'stars','moon','sun','light','dream','heart','soul','forever','always',
+    ]);
+
+    // 判断是否是"寄语默认"类（有寄语但内容为默认）
+    function isDefaultMsg(tok) {
+        tok = tok.trim();
+        if (/^(?:默认|寄语默认|默认寄语)$/.test(tok)) return true;
+        if (/^寄语\s*[：:]\s*默认$/.test(tok)) return true;
+        return false;
+    }
+    // 判断是否是"不加寄语"类（完全无寄语）
+    function isNoMsg(tok) {
+        tok = tok.trim();
+        if (/^(?:不加寄语|不用寄语|无寄语)$/.test(tok)) return true;
+        return false;
+    }
+    // 综合判断：是否应该清空寄语（默认 or 不加）
+    function shouldClearMsg(tok) {
+        return isNoMsg(tok) || isDefaultMsg(tok);
+    }
+
+    function isLikelyName(tok) {
+        tok = tok.trim();
+        if (!tok || NOT_NAME.has(tok)) return false;
+        if (/\d/.test(tok)) return false;
+        if (EN_MON_SET.has(tok.toLowerCase())) return false;
+        // 含"是/的/个/年/这/那"结尾的描述性词
+        if (/[是的个年这那]\s*$/.test(tok)) return false;
+        // 含动词/量词的长中文串
+        if (/[\u4e00-\u9fa5]{3,}/.test(tok) && /[是的个用标注年这那一第]/.test(tok)) return false;
+        // 纯中文1-5字（3字以上额外过滤常见描述词）
+        if (/^[\u4e00-\u9fa5]{1,5}$/.test(tok)) {
+            // 3字以上若含以下字符则不是名字
+            if (tok.length >= 3 && /[为是行看数仅只]/. test(tok)) return false;
+            return true;
+        }
+        // 英文缩写：W.S / LX / GP
+        if (/^([A-Z]\.){1,4}[A-Z]?$/.test(tok)) return true;   // W.S
+        if (/^[A-Z]{1,4}$/.test(tok)) return true;               // LX GP
+        if (/^[A-Z]{2,}\.[A-Z]$/.test(tok)) return true;        // SHUO.H YIZHEN.J
+        // 英文全名：每个词首字母大写，最多3词，不含常见寄语词
+        const words = tok.split(/\s+/);
+        if (words.length >= 1 && words.length <= 4) {
+            const allCap = words.every(w => /^[A-Z][a-zA-Z]{0,20}$/.test(w) || /^[A-Z]{1,4}$/.test(w)); // 允许驼峰 ChaselKi
+            const noPhrase = words.every(w => !EN_PHRASE_WORDS.has(w.toLowerCase()));
+            if (allCap && noPhrase) return true;
+        }
+        return false;
+    }
+
+    function parseOrderRemark(remark) {
+        if (!remark) return { dates: [], names: [], remaining: '' };
+
+        let text = removeBracketNotes(remark);
+        // 预处理：标签关键词中间的空格压缩
+        text = text.replace(/日\s+期\s*([：:])/g, '日期$1');
+        text = text.replace(/名\s+字\s*([：:])/g, '名字$1');
+        text = text.replace(/寄\s+语\s*([：:])/g, '寄语$1');
+        text = text.replace(/姓\s+名\s*([：:])/g, '姓名$1');
+        text = text.replace(/生\s+日\s*([：:])/g, '生日$1');
+        // 英文寄语标签统一为寄语
+        text = text.replace(/英文寄语\s*([：:])/g, '寄语$1');
+        // 去掉电话号码（防止数字被误判为日期）
+        text = text.replace(/电\s*联\s*[：:]?\s*\d{7,11}/g, '');
+        let { dates, cleaned } = extractDates(text);
+
+        const LABEL_PAT = /(?:名字|姓名|人名|寄语|日期|生日)\s*[：:]/;
+        const hasLabels = LABEL_PAT.test(text);
+        let names = [], msgs = [];
+
+        if (hasLabels) {
+            // ── 标签模式 ────────────────────────────────────────────
+            const SPLIT_RE = /((?:名字|姓名|人名|寄语|日期|生日)\s*[：:\uff1a]\s*)/g;
+            let parts = cleaned.split(SPLIT_RE).filter(s => s.trim());
+            let i = 0;
+            SPLIT_RE.lastIndex = 0;
+
+            // 前缀（标签之前的内容）
+            SPLIT_RE.lastIndex = 0;
+            if (parts.length && !SPLIT_RE.test(parts[0])) {
+                SPLIT_RE.lastIndex = 0;
+                parts[0].replace(/§D§/g, '').split(/[，,；;\s]+/).map(s => s.trim()).filter(Boolean).forEach(tok => {
+                    if (isDefaultMsg(tok)) { msgs.push('__默认__'); }
+                    else if (!isNoMsg(tok) && isLikelyName(tok) && !names.includes(tok)) names.push(tok);
+                });
+                i = 1;
+            }
+            SPLIT_RE.lastIndex = 0;
+
+            while (i < parts.length) {
+                const label = (parts[i] || '').trim();
+                const value = (parts[i + 1] || '').trim();
+                i += 2;
+                const valClean = value.replace(/§D§/g, '').replace(/^[，,；;\s]+|[，,；;\s]+$/g, '').trim();
+
+                if (/^(?:名字|姓名)/.test(label)) {
+                    // 取逗号/分号前的第一段作为名字候选
+                    let firstSeg = valClean.split(/[，,；;\n]/)[0].trim();
+                    // 中文名字中间可能有多余空格（如"徐   越"），先压缩空格再判断
+                    const firstSegCompact = firstSeg.replace(/\s+/g, '');
+                    // 若压缩后是纯中文名，用压缩版；否则保留原始（支持英文全名 Sherry Shi）
+                    if (/^[\u4e00-\u9fa5]{1,6}$/.test(firstSegCompact)) {
+                        firstSeg = firstSegCompact;
+                    }
+                    if (firstSeg && isLikelyName(firstSeg) && !names.includes(firstSeg)) {
+                        names.push(firstSeg);
+                    } else {
+                        const tok = valClean.split(/[\s，,；;]+/)[0].trim();
+                        if (tok && isLikelyName(tok) && !names.includes(tok)) names.push(tok);
+                    }
+                    const usedName = names[names.length - 1] || '';
+                    // rest 要从 firstSeg（可能含空格）之后截取，用原始 firstSeg 长度
+                    const origFirstSeg = valClean.split(/[，,；;\n]/)[0];
+                    const rest = valClean.slice(origFirstSeg.length).replace(/^[\s，,；;]+/, '').trim();
+                    if (rest) {
+                        if (isDefaultMsg(rest)) msgs.push('__默认__');
+                        else if (!isLikelyName(rest) && !isNoMsg(rest)) msgs.push(rest);
+                    }
+                } else if (/^寄语/.test(label)) {
+                    if (valClean) {
+                        // 寄语默认类：视为有寄语但内容为空，置特殊标记供模板匹配
+                        if (isDefaultMsg(valClean)) { msgs.push('__默认__'); }
+                        else if (!isNoMsg(valClean)) {
+                        // 从寄语内容末尾提取孤立的短名字（如 ...，GP）
+                        let msgParts = valClean.split(/[，,]/);
+                        while (msgParts.length > 0) {
+                            const tail = msgParts[msgParts.length - 1].trim();
+                            // 只提取纯字母缩写或短中文名（不超过4字），避免误提英文句子
+                            // 寄语末尾只提取全大写缩写（LX/GP），不提取中文（中文名字应在名字标签）
+                            if (tail && /^[A-Z]{1,4}$/.test(tail) && isLikelyName(tail) && !names.includes(tail)) {
+                                names.push(tail);
+                                msgParts.pop();
+                            } else break;
+                        }
+                        const finalMsg = msgParts.join('，').trim();
+                        if (finalMsg) {
+                            if (isDefaultMsg(finalMsg)) msgs.push('__默认__');
+                            else if (!isNoMsg(finalMsg)) msgs.push(finalMsg);
+                        }
+                        } // end else if !isNoMsg
+                    }
+                } else if (/^(?:日期|生日)/.test(label)) {
+                    // 日期已提取，值里可能还有名字
+                    if (valClean) {
+                        // 去掉日期占位符后，整体压缩空格尝试中文名
+                        const noDate = valClean.replace(/§D§/g,'').trim();
+                        const compact = noDate.replace(/\s+/g,'');
+                        if (compact && /^[\u4e00-\u9fa5]{1,6}$/.test(compact) && isLikelyName(compact) && !names.includes(compact)) {
+                            names.push(compact);
+                        } else if (noDate) {
+                            noDate.split(/[,，;；]+/).map(s=>s.trim()).filter(Boolean).forEach(tok => {
+                                const tc = tok.replace(/\s+/g,'');
+                                const used = /^[\u4e00-\u9fa5]{1,6}$/.test(tc) ? tc : tok;
+                                if (isLikelyName(used) && !names.includes(used)) names.push(used);
+                            });
+                        }
+                    }
+                }
+            }
+
+            // 后处理：通用模式里的非标签段（处理寄语标签后还有名字的情况，如 5.20/4.27 双组）
+            // 找出 cleaned 中 §D§ 后面跟着的孤立名字（未被标签覆盖）
+            cleaned.split(/[，,；;\n|｜]+/).forEach(seg => {
+                seg = seg.replace(/§D§/g, '').trim();
+                if (!seg || seg === '§D§') return;
+                if (isDefaultMsg(seg)) { if(!msgs.includes('__默认__')) msgs.push('__默认__'); return; }
+                if (isNoMsg(seg)) return;
+                // 判断是否已在 msgs 或 names 里
+                if (names.includes(seg) || msgs.some(m => m.includes(seg))) return;
+                // 空格分割后逐个检测
+                seg.split(/\s+/).filter(Boolean).forEach(tok => {
+                    // 跳过已有名字的子串（防止 'Sherry Shi' 后又加 'Shi'）
+                    const alreadyCovered = names.some(n => n.includes(tok));
+                    if (!alreadyCovered && isLikelyName(tok) && !names.includes(tok)) names.push(tok);
+                });
+            });
+
+        } else {
+            // ── 通用模式 ────────────────────────────────────────────
+            const segs = cleaned.split(/[，,；;\n|｜]+/).map(s => s.replace(/§D§/g, '').trim()).filter(Boolean);
+            const others = [];
+            for (const seg of segs) {
+                if (/^(左边|右边|月亮|带名字|不带名字|各出一版图|定制信息模版)/.test(seg)) { others.push(seg); continue; }
+                if (isDefaultMsg(seg)) { others.push('__默认__'); continue; }
+                if (isNoMsg(seg)) continue;
+                if (!seg) continue;
+                if (isLikelyName(seg) && !names.includes(seg)) { names.push(seg); continue; }
+                // 空格分割尝试：名字提取后，剩余非名字词也要处理
+                const subToks = seg.split(/\s+/).filter(Boolean);
+                if (subToks.length > 1) {
+                    let anyName = false;
+                    const nonNameToks = [];
+                    for (const st of subToks) {
+                        if (isDefaultMsg(st)) { others.push('__默认__'); anyName = true; }
+                        else if (isNoMsg(st)) { anyName = true; }
+                        else if (isLikelyName(st) && !names.includes(st)) { names.push(st); anyName = true; }
+                        else { nonNameToks.push(st); }
+                    }
+                    if (anyName) {
+                        if (nonNameToks.length) others.push(nonNameToks.join(' '));
+                        continue;
+                    }
+                }
+                others.push(seg);
+            }
+            msgs = others;
+        }
+
+        // 名字数量限制：通用模式下不超过日期数量*2（允许双人共一日期），标签模式无限制
+        if (!hasLabels && dates.length > 0 && names.length > dates.length * 2) {
+            const excess = names.splice(dates.length * 2);
+            msgs = [...excess, ...msgs];
+        }
+
+        const remaining = msgs.filter(Boolean).join('，');
+        return { dates, names, remaining };
+    }
+    // ══════════════════════════════════════════════════════════════════
+
+    function checkContentType(val){
+        if(!val||val==='—')return'empty';
+        if(/[一-龥]/.test(val)&&/[a-zA-Z]/.test(val))return'mixed';
+        if(/[一-龥]/.test(val))return'chinese';
+        if(/[a-zA-Z]/.test(val))return'english';
+        return'empty';
+    }
+    function getFontValue(sourceVal, targetCol, templateName){
+        if(!fontRules.length) return '';
+        for(let rule of fontRules){
+            if(rule.templateContains && rule.templateContains.trim() !== ''){
+                if(!templateName || !templateName.includes(rule.templateContains)) continue;
+            }
+            if(rule.targetCol !== targetCol) continue;
+            let ct = checkContentType(sourceVal);
+            if(rule.contentType !== ct) continue;
+            return rule.result;
+        }
+        return '';
+    }
+    function matchTemplateName(code,spec,aName,msg1){let cleanSpec=spec?.replace(/-/g,'')||'';let upperCode=(code||'').toUpperCase();let upperSpec=(spec||'').toUpperCase();for(let r of templateRules){if(r.codeContains && !upperCode.includes(r.codeContains.toUpperCase()) && !upperSpec.includes(r.codeContains.toUpperCase()))continue;let mc=0,total=0;if(r.kw1?.trim()){total++;if(cleanSpec.includes(r.kw1.toLowerCase()))mc++;}if(r.kw2?.trim()){total++;if(cleanSpec.includes(r.kw2.toLowerCase()))mc++;}if(r.kw3?.trim()){total++;if(cleanSpec.includes(r.kw3.toLowerCase()))mc++;}if(total>0 && mc!==total)continue;if(r.aNameReq==='required' && (!aName||aName==='—'))continue;if(r.aNameReq==='empty' && aName && aName!=='—')continue;if(r.msgReq==='required' && (!msg1||msg1==='—'))continue;if(r.msgReq==='empty' && msg1 && msg1!=='—')continue;return r.result;}return'?';}
+    function determinePackage(code,spec){let uc=(code||'').toUpperCase(),ls=(spec||'').toLowerCase();let us=(spec||'').toUpperCase();if(!uc&&!us)return'⚠️未匹配';for(let r of packageRules){if(!uc.includes(r.codeContains?.toUpperCase()||'') && !us.includes(r.codeContains?.toUpperCase()||''))continue;let mc=0,total=0;if(r.specIncludes1?.trim()){total++;if(ls.includes(r.specIncludes1.toLowerCase()))mc++;}if(r.specIncludes2?.trim()){total++;if(ls.includes(r.specIncludes2.toLowerCase()))mc++;}if(total>0 && mc!==total)continue;if(r.specExcludes1?.trim() && ls.includes(r.specExcludes1.toLowerCase()))continue;if(r.specExcludes2?.trim() && ls.includes(r.specExcludes2.toLowerCase()))continue;return r.result;}return'⚠️未匹配';}
+    
+    function generateExportData(){
+        let importData=getImportData();
+        let rows=[];
+        for(let row of importData){
+            let originalRemark=row[8]||'';
+            let cleanedRemark = removeShieldWordsFromRemark(originalRemark);
+            let 付款日期=row[1]||'',店铺名称=row[2]||'',线上订单号=row[3]||'',内部订单号=row[4]||'',商品编码=row[5]||'',颜色及规格=row[6]||'',数量=row[7]||'';
+            let {dates,names,remaining}=parseOrderRemark(cleanedRemark);
+            let aBirth=dates[0]||'',aName=names[0]||'',bBirth=dates[1]||'',bName=names[1]||'',cBirth=dates[2]||'',cName=names[2]||'',dBirth=dates[3]||'',dName=names[3]||'',msg1Raw=(remaining||''),msg1=msg1Raw==='__默认__'?'':msg1Raw;
+            let 套餐=determinePackage(商品编码,颜色及规格);
+            let 模板名字=matchTemplateName(商品编码,颜色及规格,aName,msg1Raw);
+            let aNameFont=getFontValue(aName,"A名字-字体",模板名字);
+            let aBirthFont=getFontValue(aBirth,"A生日-字体",模板名字);
+            let bNameFont=getFontValue(bName,"B名字-字体",模板名字);
+            let bBirthFont=getFontValue(bBirth,"B生日-字体",模板名字);
+            let cNameFont=getFontValue(cName,"C姓名-字体",模板名字);
+            let cBirthFont=getFontValue(cBirth,"C生日-字体",模板名字);
+            let dNameFont=getFontValue(dName,"D名字-字体",模板名字);
+            let dBirthFont=getFontValue(dBirth,"D生日-字体",模板名字);
+            let msg1Font=getFontValue(msg1,"寄语1-字体",模板名字);
+            // 修改：所有硬编码的 "—" 替换为空字符串，确保导出不显示横线占位符
+            rows.push([付款日期,店铺名称,线上订单号,内部订单号,商品编码,颜色及规格,数量,cleanedRemark,
+                        aBirth,aName,bBirth,bName,cBirth,cName,dBirth,dName,msg1,'','','',模板名字,套餐,
+                        aBirthFont,aNameFont,bBirthFont,bNameFont,cBirthFont,cNameFont,dBirthFont,dNameFont,msg1Font,'','','']);
+        }
+        return{headers:exportHeaders,rows};
+    }
+    const exportHeaders=["下单时间","店铺名","订单号","内部号","商品编码","颜色及规格","数量","订单备注(已滤词)","A生日","A名字","B生日","B名字","C生日","C名字","D生日","D名字","寄语1","寄语2","寄语3","寄语4","模板名字","套餐","A生日-字体","A名字-字体","B生日-字体","B名字-字体","C生日-字体","C姓名-字体","D生日-字体","D名字-字体","寄语1-字体","寄语2-字体","寄语3-字体","寄语4-字体"];
+    function renderExportTable(){let{headers,rows}=generateExportData();let theadRow=document.querySelector('#exportHeader tr');if(theadRow){theadRow.innerHTML='';headers.forEach(h=>{let th=document.createElement('th');th.textContent=h;theadRow.appendChild(th);});}else{let tr=document.createElement('tr');headers.forEach(h=>{let th=document.createElement('th');th.textContent=h;tr.appendChild(th);});document.querySelector('#exportHeader')?.appendChild(tr);}let body=document.getElementById('exportBody');if(!body)return;if(!rows.length){body.innerHTML='<tr><td colspan="34">暂无数据</td></tr>';return;}let html='';rows.forEach(row=>{html+='<tr>';row.forEach((val,i)=>{let bg='#fdfdfd';if(i===20)bg=val==='?'?'#fff3cd':'#d9f0d9';html+=`<td style="background:${bg};">${val}${i===7 && shieldWords.length ? ' <span class="removed-badge">已滤词</span>' : ''}</td>`;});html+='</tr>';});body.innerHTML=html;}
+    document.getElementById('generateExportBtn')?.addEventListener('click',renderExportTable);
+
+    // 屏蔽词UI
+    function renderShield(){let cont=document.getElementById('shieldList');cont.innerHTML='';shieldWords.forEach((w,i)=>{let span=document.createElement('span');span.className='keyword-tag';span.innerHTML=`${w}<span class="remove" data-index="${i}">✕</span>`;cont.appendChild(span);});document.querySelectorAll('#shieldList .remove').forEach(btn=>btn.addEventListener('click',e=>{shieldWords.splice(e.target.dataset.index,1);renderShield();saveAll();renderExportTable();}));}
+    document.getElementById('addShieldWordBtn')?.addEventListener('click',()=>{let inp=document.getElementById('newShieldWord');let val=inp.value.trim();if(val && !shieldWords.includes(val)){shieldWords.push(val);renderShield();saveAll();renderExportTable();inp.value='';}});
+    renderShield();
+
+    // 字体规则渲染
+    const fontBody=document.getElementById('fontRuleBody');
+    function renderFontRules(){fontBody.innerHTML='';fontRules.forEach((rule,i)=>{let tr=document.createElement('tr');tr.innerHTML=`
+          <td><input type="text" class="font-template" value="${(rule.templateContains||'').replace(/"/g, '&quot;')}" data-index="${i}" placeholder="模板名字包含的关键词"></td>
+          <td><input type="text" class="font-target" value="${(rule.targetCol||'').replace(/"/g, '&quot;')}" data-index="${i}" placeholder="字体列名"></td>
+          <td><select class="font-source" data-index="${i}">${fontSourceCols.map(c=>`<option ${rule.sourceCol===c?'selected':''}>${c}</option>`).join('')}</select></td>
+          <td><select class="font-type" data-index="${i}"><option value="empty" ${rule.contentType==='empty'?'selected':''}>空白</option><option value="chinese" ${rule.contentType==='chinese'?'selected':''}>中文</option><option value="english" ${rule.contentType==='english'?'selected':''}>英文</option><option value="mixed" ${rule.contentType==='mixed'?'selected':''}>中文+英文</option></select></td>
+          <td><input type="text" class="font-result" value="${(rule.result||'').replace(/"/g, '&quot;')}" data-index="${i}" placeholder="结果字体"></td>
+        <td class="remove-row" data-index="${i}">✕</td>
+    `;fontBody.appendChild(tr);});attachFontEvents();}
+    function attachFontEvents(){document.querySelectorAll('.font-template').forEach(inp=>inp.addEventListener('input',function(e){fontRules[this.dataset.index].templateContains=this.value;saveAll();renderExportTable();}));document.querySelectorAll('.font-target').forEach(inp=>inp.addEventListener('input',function(e){fontRules[this.dataset.index].targetCol=this.value;saveAll();renderExportTable();}));document.querySelectorAll('.font-source').forEach(s=>s.addEventListener('change',function(e){fontRules[this.dataset.index].sourceCol=this.value;saveAll();renderExportTable();}));document.querySelectorAll('.font-type').forEach(s=>s.addEventListener('change',function(e){fontRules[this.dataset.index].contentType=this.value;saveAll();renderExportTable();}));document.querySelectorAll('.font-result').forEach(inp=>inp.addEventListener('input',function(e){fontRules[this.dataset.index].result=this.value;saveAll();renderExportTable();}));document.querySelectorAll('#fontRuleBody .remove-row').forEach(btn=>btn.addEventListener('click',function(e){fontRules.splice(this.dataset.index,1);renderFontRules();saveAll();renderExportTable();}));}
+    document.getElementById('addFontRuleBtn')?.addEventListener('click',()=>{fontRules.push({templateContains:"",targetCol:"A名字-字体",sourceCol:"A名字",contentType:"empty",result:"默认字体"});renderFontRules();saveAll();});
+    renderFontRules();
+
+    // 模板规则渲染
+    const formulaBody=document.getElementById('formulaBody');
+    function renderTemplate(){formulaBody.innerHTML='';templateRules.forEach((r,i)=>{let tr=document.createElement('tr');tr.innerHTML=`<td><input class="rule-code" value="${(r.codeContains||'').replace(/"/g, '&quot;')}" data-index="${i}"></td><td><input class="rule-kw1" value="${(r.kw1||'').replace(/"/g, '&quot;')}" data-index="${i}"></td><td><input class="rule-kw2" value="${(r.kw2||'').replace(/"/g, '&quot;')}" data-index="${i}"></td><td><input class="rule-kw3" value="${(r.kw3||'').replace(/"/g, '&quot;')}" data-index="${i}"></td><td><select class="rule-aname" data-index="${i}"><option value="any" ${r.aNameReq==='any'?'selected':''}>可为空</option><option value="required" ${r.aNameReq==='required'?'selected':''}>不为空</option><option value="empty" ${r.aNameReq==='empty'?'selected':''}>为空</option></select></td><td><select class="rule-msg" data-index="${i}"><option value="any" ${r.msgReq==='any'?'selected':''}>可为空</option><option value="required" ${r.msgReq==='required'?'selected':''}>不为空</option><option value="empty" ${r.msgReq==='empty'?'selected':''}>为空</option></select></td><td><input class="rule-result" value="${(r.result||'').replace(/"/g, '&quot;')}" data-index="${i}"></td><td class="remove-row">✕</td>`;formulaBody.appendChild(tr);});attachTemplateEvents();}
+    function attachTemplateEvents(){document.querySelectorAll('.rule-code').forEach(inp=>inp.addEventListener('input',function(e){templateRules[this.dataset.index].codeContains=this.value;sortTemplateRules();renderTemplate();renderExportTable();saveAll();}));['kw1','kw2','kw3'].forEach(k=>document.querySelectorAll(`.rule-${k}`).forEach(inp=>inp.addEventListener('input',function(e){templateRules[this.dataset.index][k]=this.value;sortTemplateRules();renderTemplate();renderExportTable();saveAll();})));document.querySelectorAll('.rule-aname').forEach(s=>s.addEventListener('change',function(e){templateRules[this.dataset.index].aNameReq=this.value;saveAll();renderExportTable();}));document.querySelectorAll('.rule-msg').forEach(s=>s.addEventListener('change',function(e){templateRules[this.dataset.index].msgReq=this.value;saveAll();renderExportTable();}));document.querySelectorAll('.rule-result').forEach(inp=>inp.addEventListener('input',function(e){templateRules[this.dataset.index].result=this.value;saveAll();renderExportTable();}));document.querySelectorAll('#formulaBody .remove-row').forEach(btn=>btn.addEventListener('click',function(e){templateRules.splice(this.parentElement.querySelector('.rule-code').dataset.index,1);sortTemplateRules();renderTemplate();renderExportTable();saveAll();}));}
+    document.getElementById('addFormulaRowBtn')?.addEventListener('click',()=>{templateRules.push({codeContains:'',kw1:'',kw2:'',kw3:'',aNameReq:'any',msgReq:'any',result:''});sortTemplateRules();renderTemplate();renderExportTable();saveAll();});
+    renderTemplate();
+
+    // 套餐规则渲染
+    const packageBody=document.getElementById('packageRuleBody');
+    function renderPackage(){packageBody.innerHTML='';packageRules.forEach((r,i)=>{let tr=document.createElement('tr');tr.innerHTML=`<td><input class="rule-code" value="${(r.codeContains||'').replace(/"/g, '&quot;')}" data-index="${i}"></td><td><input class="rule-inc1" value="${(r.specIncludes1||'').replace(/"/g, '&quot;')}" data-index="${i}"></td><td><input class="rule-inc2" value="${(r.specIncludes2||'').replace(/"/g, '&quot;')}" data-index="${i}"></td><td><input class="rule-exc1" value="${(r.specExcludes1||'').replace(/"/g, '&quot;')}" data-index="${i}"></td><td><input class="rule-exc2" value="${(r.specExcludes2||'').replace(/"/g, '&quot;')}" data-index="${i}"></td><td><input class="rule-res" value="${(r.result||'').replace(/"/g, '&quot;')}" data-index="${i}"></td><td class="remove-rule">✕</td>`;packageBody.appendChild(tr);});attachPackageEvents();}
+    function attachPackageEvents(){document.querySelectorAll('.rule-code').forEach(inp=>inp.addEventListener('input',function(e){packageRules[this.dataset.index].codeContains=this.value;sortPackageRules();renderPackage();renderExportTable();saveAll();}));['inc1','inc2','exc1','exc2','res'].forEach(k=>document.querySelectorAll(`.rule-${k}`).forEach(inp=>inp.addEventListener('input',function(e){let idx=this.dataset.index;if(k==='inc1')packageRules[idx].specIncludes1=this.value;if(k==='inc2')packageRules[idx].specIncludes2=this.value;if(k==='exc1')packageRules[idx].specExcludes1=this.value;if(k==='exc2')packageRules[idx].specExcludes2=this.value;if(k==='res')packageRules[idx].result=this.value;sortPackageRules();renderPackage();renderExportTable();saveAll();})));document.querySelectorAll('#packageRuleBody .remove-rule').forEach(btn=>btn.addEventListener('click',function(e){packageRules.splice(this.parentElement.querySelector('.rule-code').dataset.index,1);sortPackageRules();renderPackage();renderExportTable();saveAll();}));}
+    document.getElementById('addPackageRuleBtn')?.addEventListener('click',()=>{packageRules.push({codeContains:'',specIncludes1:'',specIncludes2:'',specExcludes1:'',specExcludes2:'',result:'新套餐'});sortPackageRules();renderPackage();renderExportTable();saveAll();});
+    renderPackage();
+
+    // 导入导出辅助函数 (保持不变)
+    function downloadJSON(data,name){let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();URL.revokeObjectURL(a.href);}
+    function parseFile(file, cb) {
+        const isJson = file.name.toLowerCase().endsWith('.json');
+        const reader = new FileReader();
+        if (isJson) {
+            reader.onload = function(ev) {
+                try {
+                    const parsed = JSON.parse(ev.target.result);
+                    // 支持数组（屏蔽词/规则列表）和对象（全部配置）
+                    cb(Array.isArray(parsed) ? parsed : parsed);
+                } catch(err) {
+                    alert('❌ JSON 解析失败：' + err.message + '\n请确认文件格式正确');
+                }
+            };
+            reader.onerror = function() { alert('❌ 文件读取失败'); };
+            reader.readAsText(file, 'UTF-8');
+        } else {
+            reader.onload = function(ev) {
+                try {
+                    const wb = XLSX.read(new Uint8Array(ev.target.result), {type:'array'});
+                    if (!wb.SheetNames.length) { alert('❌ Excel 文件中没有工作表'); cb([]); return; }
+                    const sheet = wb.Sheets[wb.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval:''});
+                    if (rows.length < 2) { alert('❌ 表格数据为空（需要至少一行表头+一行数据）'); cb([]); return; }
+                    const headers = rows[0];
+                    const res = [];
+                    for (let i = 1; i < rows.length; i++) {
+                        const row = rows[i];
+                        if (row.some(cell => cell !== '')) {
+                            const obj = {};
+                            headers.forEach((h, idx) => { if(h) obj[String(h).trim()] = row[idx] != null ? String(row[idx]).trim() : ''; });
+                            res.push(obj);
+                        }
+                    }
+                    cb(res);
+                } catch(err) {
+                    alert('❌ Excel 解析失败：' + err.message + '\n请确认是 .xlsx/.xls/.csv 格式');
+                }
+            };
+            reader.onerror = function() { alert('❌ 文件读取失败'); };
+            reader.readAsArrayBuffer(file);
+        }
+    }
+    document.getElementById('exportShieldBtn')?.addEventListener('click',()=>downloadJSON(shieldWords,'屏蔽词.json'));
+    document.getElementById('importShieldBtn')?.addEventListener('click',()=>document.getElementById('importShieldFile')?.click());
+    document.getElementById('importShieldFile')?.addEventListener('change', function(e) {
+        const f = e.target.files[0]; if(!f) return;
+        parseFile(f, function(data) {
+            let words = [];
+            if (Array.isArray(data)) {
+                // 数组：可能是 ["顺丰","发顺丰"] 或 [{屏蔽词:"顺丰"}, ...]
+                words = data.map(d => typeof d === 'string' ? d : (d.屏蔽词||d.word||Object.values(d)[0]||'')).filter(v=>v&&typeof v==='string');
+            }
+            if (words.length) { shieldWords = words; renderShield(); saveAll(); renderExportTable(); alert('✅ 屏蔽词导入成功，共 '+words.length+' 个'); }
+            else alert('❌ 未找到屏蔽词数据');
+        });
+        this.value = '';});
+    document.getElementById('exportFontRulesBtn')?.addEventListener('click',()=>downloadJSON(fontRules,'字体规则.json'));
+    document.getElementById('importFontRulesBtn')?.addEventListener('click',()=>document.getElementById('importFontFile')?.click());
+    document.getElementById('importFontFile')?.addEventListener('change', function(e) {
+        const f = e.target.files[0]; if(!f) return;
+        parseFile(f, function(data) {
+            const rules = (Array.isArray(data) ? data : []).map(d => ({
+                templateContains: d.模板名字包含||d.templateContains||'',
+                targetCol: d.目标列||d.targetCol||'',
+                sourceCol: d.源列||d.sourceCol||'',
+                contentType: d.内容类型||d.contentType||'',
+                result: d.结果字体||d.result||''
+            })).filter(r => r.targetCol);
+            if (rules.length) { fontRules = rules; renderFontRules(); saveAll(); renderExportTable(); alert('✅ 字体规则导入成功，共 '+rules.length+' 条'); }
+            else alert('❌ 未找到字体规则数据');
+        });
+        this.value = '';});
+    document.getElementById('exportTemplateRulesBtn')?.addEventListener('click',()=>{
+        let h=['商品编码包含','关键词1','关键词2','关键词3','A名字要求','寄语1要求','返回结果'];
+        let d=[h,...templateRules.map(r=>[r.codeContains||'',r.kw1||'',r.kw2||'',r.kw3||'',r.aNameReq||'',r.msgReq||'',r.result||''])];
+        let wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(d),'模板规则'); XLSX.writeFile(wb,'模板规则.xlsx');
+    });
+    document.getElementById('exportTemplateRulesJSONBtn')?.addEventListener('click',()=>downloadJSON(templateRules,'模板规则.json'));
+    document.getElementById('importTemplateRulesBtn')?.addEventListener('click',()=>document.getElementById('importTemplateFile')?.click());
+    document.getElementById('importTemplateFile')?.addEventListener('change', function(e) {
+        const f = e.target.files[0]; if(!f) return;
+        parseFile(f, function(data) {
+            const rules = Array.isArray(data) ? data : [];
+            if (rules.length) {
+                templateRules = rules;
+                sortTemplateRules(); renderTemplate(); renderExportTable(); saveAll();
+                alert('✅ 模板规则导入成功，共 '+rules.length+' 条');
+            } else alert('❌ 未找到规则数据');
+        });
+        this.value = '';});
+    document.getElementById('exportPackageRulesBtn')?.addEventListener('click',()=>{
+        let h=['商品编码包含','规格包含1','规格包含2','规格排除1','规格排除2','结果'];
+        let d=[h,...packageRules.map(r=>[r.codeContains||'',r.specIncludes1||'',r.specIncludes2||'',r.specExcludes1||'',r.specExcludes2||'',r.result||''])];
+        let wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(d),'套餐规则'); XLSX.writeFile(wb,'套餐规则.xlsx');
+    });
+    document.getElementById('exportPackageRulesJSONBtn')?.addEventListener('click',()=>downloadJSON(packageRules,'套餐规则.json'));
+    document.getElementById('importPackageRulesBtn')?.addEventListener('click',()=>document.getElementById('importPackageFile')?.click());
+    document.getElementById('importPackageFile')?.addEventListener('change', function(e) {
+        const f = e.target.files[0]; if(!f) return;
+        parseFile(f, function(data) {
+            const rawRules = Array.isArray(data) ? data : [];
+            // 兼容旧字段名 specIncludes/specExcludes → specIncludes1/specExcludes1
+            const rules = rawRules.map(r => ({
+                codeContains: r.codeContains || '',
+                specIncludes1: r.specIncludes1 || r.specIncludes || '',
+                specIncludes2: r.specIncludes2 || '',
+                specExcludes1: r.specExcludes1 || r.specExcludes || '',
+                specExcludes2: r.specExcludes2 || '',
+                result: r.result || ''
+            }));
+            if (rules.length) {
+                packageRules = rules;
+                sortPackageRules(); renderPackage(); renderExportTable(); saveAll();
+                alert('✅ 套餐规则导入成功，共 '+rules.length+' 条');
+            } else alert('❌ 未找到规则数据');
+        });
+        this.value = '';});
+    
+    const fieldGrid=document.getElementById('fieldGrid');
+    function initFieldSelector(){fieldGrid.innerHTML='';exportHeaders.forEach((h,i)=>{let div=document.createElement('div');div.className='field-item';let cb=document.createElement('input');cb.type='checkbox';cb.id=`fld_${i}`;cb.value=i;cb.checked=true;let lbl=document.createElement('label');lbl.htmlFor=`fld_${i}`;lbl.textContent=h;div.appendChild(cb);div.appendChild(lbl);fieldGrid.appendChild(div);});}
+    initFieldSelector();
+    function getCheckboxes(){return Array.from(document.querySelectorAll('#fieldGrid input[type="checkbox"]'));}
+    document.getElementById('selectAllBtn')?.addEventListener('click',()=>getCheckboxes().forEach(c=>c.checked=true));
+    document.getElementById('deselectAllBtn')?.addEventListener('click',()=>getCheckboxes().forEach(c=>c.checked=false));
+    document.getElementById('exportXlsxBtn')?.addEventListener('click',()=>{let{headers,rows}=generateExportData();let selected=getCheckboxes().filter(c=>c.checked).map(c=>parseInt(c.value));if(!selected.length)return alert('请选择字段');let ws=XLSX.utils.aoa_to_sheet([selected.map(i=>headers[i]),...rows.map(r=>selected.map(i=>r[i]))]);let wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'导出');XLSX.writeFile(wb,`订单导出_${new Date().toISOString().slice(0,10)}.xlsx`);});
+    document.getElementById('importFileBtn')?.addEventListener('click',()=>document.getElementById('xlsxFileInput')?.click());
+    document.getElementById('xlsxFileInput')?.addEventListener('change',function(e){let file=e.target.files[0];if(!file)return;let r=new FileReader();r.onload=le=>{try {
+                let data = new Uint8Array(le.target.result);
+                let wb = XLSX.read(data, {type:'array'});
+                let rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, defval:''});
+                let nonEmpty = rows.filter(r => Array.isArray(r) && r.some(c => c !== ''));
+                if (!nonEmpty.length) return alert('❌ 表格无数据');
+                // 自动跳过表头行：若第一行含"付款日期/下单时间/订单号/平台"等关键词则跳过
+                const HEADER_KEYWORDS = ['付款日期','下单时间','订单号','平台','店铺','商品编码','订单备注','线上订单','内部订单','颜色及规格','数量'];
+                if (nonEmpty.length > 0) {
+                    const firstRow = nonEmpty[0].map(c => String(c).trim());
+                    const isHeader = HEADER_KEYWORDS.some(kw => firstRow.some(cell => cell.includes(kw)));
+                    if (isHeader) nonEmpty = nonEmpty.slice(1);
+                }
+                if (!nonEmpty.length) return alert('❌ 跳过表头后无数据');
+                let formatted = nonEmpty.map(r => {
+                    let raw = Array.isArray(r) ? r : [r];
+                    let cols = [];
+                    for (let i = 0; i < 9; i++) {
+                        let val = raw[i] !== undefined ? raw[i] : '';
+                        if (typeof val === 'number' && val > 30000 && val < 50000 && Number.isInteger(val)) val = excelDateToJSDate(val);
+                        else if (val !== null) val = String(val).trim();
+                        else val = '';
+                        cols.push(val);
+                    }
+                    return cols;
+                });
+                renderImportRows(formatted);
+                renderExportTable();
+                alert('✅ 导入成功，共 '+formatted.length+' 行');
+            } catch(err) { alert('❌ Excel 解析失败：' + err.message); }
+            this.value = '';};r.readAsArrayBuffer(file);});
+    document.getElementById('copyExportBtn')?.addEventListener('click',()=>{
+        let rows=Array.from(document.querySelectorAll('#exportHeader tr, #exportBody tr'));
+        let text=rows.map(tr=>Array.from(tr.querySelectorAll('th,td')).map(c=>{let t=c.textContent||''; return t.replace('已滤词','').trim();}).join('\t')).join('\n');
+        if(navigator.clipboard){ navigator.clipboard.writeText(text).then(()=>alert('✅ 已复制到剪贴板')).catch(()=>alert('复制失败，请手动选中')); }
+        else{ let ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); alert('✅ 已复制'); }
+    });
+    document.getElementById('saveConfigBtn')?.addEventListener('click',()=>{
+        let config={templateRules,packageRules,shieldWords,fontRules};
+        let json=JSON.stringify(config,null,2);
+        let blob=new Blob([json],{type:'application/json'});
+        let a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='全部配置.json'; a.click();
+        URL.revokeObjectURL(a.href);
+        let ind=document.getElementById('saveIndicator');
+        if(ind){ ind.textContent='💾 配置已下载'; ind.style.opacity='1'; setTimeout(()=>{ ind.textContent='💾 已自动保存'; ind.style.opacity='0.5'; },2000); }
+    });
+    document.getElementById('loadConfigBtn')?.addEventListener('click',()=>document.getElementById('loadConfigFile')?.click());
+    document.getElementById('loadConfigFile')?.addEventListener('change',function(e){
+        let f=e.target.files[0]; if(!f) return;
+        let reader=new FileReader();
+        reader.onload=function(ev){
+            try{
+                let cfg=JSON.parse(ev.target.result);
+                if(cfg.templateRules){ templateRules=cfg.templateRules; }
+                if(cfg.packageRules){ packageRules=cfg.packageRules.map(r=>({
+                    codeContains: r.codeContains||'',
+                    specIncludes1: r.specIncludes1||r.specIncludes||'',
+                    specIncludes2: r.specIncludes2||'',
+                    specExcludes1: r.specExcludes1||r.specExcludes||'',
+                    specExcludes2: r.specExcludes2||'',
+                    result: r.result||''
+                })); }
+                if(cfg.shieldWords){ shieldWords=cfg.shieldWords; }
+                if(cfg.fontRules){ fontRules=cfg.fontRules; }
+                sortTemplateRules(); sortPackageRules();
+                renderTemplate(); renderPackage(); renderShield(); renderFontRules(); renderExportTable();
+                saveAll();
+                alert('✅ 配置加载成功！共加载：模板规则'+templateRules.length+'条，套餐规则'+packageRules.length+'条');
+            }catch(err){
+                alert('❌ 解析失败，请确认是正确的配置JSON文件\n错误：'+err.message);
+            }
+        };
+        reader.readAsText(f,'UTF-8');
+        this.value='';
+    });
+    window.addEventListener('load',()=>{
+        renderTemplate(); renderPackage(); renderShield(); renderFontRules(); renderExportTable();
+        let ind=document.getElementById('saveIndicator');
+        if(ind){ ind.textContent='✅ 配置已加载（共'+templateRules.length+'条模板规则）'; ind.style.opacity='1'; setTimeout(()=>{ ind.textContent='💾 已自动保存'; ind.style.opacity='0.5'; },3000); }
+    });
+})();
+</script>
+</body>
+</html>
